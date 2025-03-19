@@ -8,7 +8,7 @@ let score = 0;
 
 const brickRowCount = 9;
 const brickColumnCount = 5;
-const delay = 500; //delay to reset the game
+const delay = 500; // delay to reset the game
 
 // Create ball props
 const ball = {
@@ -79,13 +79,15 @@ function drawScore() {
 
 // Draw bricks on canvas
 function drawBricks() {
-  bricks.forEach(column => {
-    column.forEach(brick => {
-      ctx.beginPath();
-      ctx.rect(brick.x, brick.y, brick.w, brick.h);
-      ctx.fillStyle = brick.visible ? '#0095dd' : 'transparent';
-      ctx.fill();
-      ctx.closePath();
+  bricks.forEach((column) => {
+    column.forEach((brick) => {
+      if (brick.visible) {
+        ctx.beginPath();
+        ctx.rect(brick.x, brick.y, brick.w, brick.h);
+        ctx.fillStyle = '#0095dd';
+        ctx.fill();
+        ctx.closePath();
+      }
     });
   });
 }
@@ -101,7 +103,7 @@ function movePaddle() {
 
   if (paddle.x < 0) {
     paddle.x = 0;
-    }
+  }
 }
 
 // Move ball on canvas
@@ -111,7 +113,7 @@ function moveBall() {
 
   // Wall collision (right/left)
   if (ball.x + ball.size > canvas.width || ball.x - ball.size < 0) {
-    ball.dx *= -1; // ball.dx = ball.dx * -1
+    ball.dx *= -1;
   }
 
   // Wall collision (top/bottom)
@@ -119,26 +121,24 @@ function moveBall() {
     ball.dy *= -1;
   }
 
-  // console.log(ball.x, ball.y);
-
   // Paddle collision
   if (
-    ball.x - ball.size > paddle.x &&
-    ball.x + ball.size < paddle.x + paddle.w &&
-    ball.y + ball.size > paddle.y
+    ball.x - ball.size > paddle.x
+    && ball.x + ball.size < paddle.x + paddle.w
+    && ball.y + ball.size > paddle.y
   ) {
     ball.dy = -ball.speed;
   }
 
   // Brick collision
-  bricks.forEach(column => {
-    column.forEach(brick => {
+  bricks.forEach((column) => {
+    column.forEach((brick) => {
       if (brick.visible) {
         if (
-          ball.x - ball.size > brick.x && // left brick side check
-          ball.x + ball.size < brick.x + brick.w && // right brick side check
-          ball.y + ball.size > brick.y && // top brick side check
-          ball.y - ball.size < brick.y + brick.h // bottom brick side check
+          ball.x - ball.size > brick.x // left side
+          && ball.x + ball.size < brick.x + brick.w // right side
+          && ball.y + ball.size > brick.y // top side
+          && ball.y - ball.size < brick.y + brick.h // bottom side
         ) {
           ball.dy *= -1;
           brick.visible = false;
@@ -161,34 +161,35 @@ function increaseScore() {
   score++;
 
   if (score % (brickRowCount * brickColumnCount) === 0) {
+    ball.visible = false;
+    paddle.visible = false;
 
-      ball.visible = false;
-      paddle.visible = false;
-
-      //After 0.5 sec restart the game
-      setTimeout(function () {
-          showAllBricks();
-          score = 0;
-          paddle.x = canvas.width / 2 - 40;
-          paddle.y = canvas.height - 20;
-          ball.x = canvas.width / 2;
-          ball.y = canvas.height / 2;
-          ball.visible = true;
-          paddle.visible = true;
-      },delay)
+    // After 0.5 sec restart the game
+    setTimeout(() => {
+      showAllBricks();
+      score = 0;
+      paddle.x = canvas.width / 2 - 40;
+      paddle.y = canvas.height - 20;
+      ball.x = canvas.width / 2;
+      ball.y = canvas.height / 2;
+      ball.visible = true;
+      paddle.visible = true;
+    }, delay);
   }
 }
 
 // Make all bricks appear
 function showAllBricks() {
-  bricks.forEach(column => {
-    column.forEach(brick => (brick.visible = true));
+  bricks.forEach((column) => {
+    column.forEach((brick) => {
+      brick.visible = true;
+    });
   });
 }
 
 // Draw everything
 function draw() {
-  // clear canvas
+  // Clear canvas
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   drawBall();
@@ -222,10 +223,10 @@ function keyDown(e) {
 // Keyup event
 function keyUp(e) {
   if (
-    e.key === 'Right' ||
-    e.key === 'ArrowRight' ||
-    e.key === 'Left' ||
-    e.key === 'ArrowLeft'
+    e.key === 'Right'
+    || e.key === 'ArrowRight'
+    || e.key === 'Left'
+    || e.key === 'ArrowLeft'
   ) {
     paddle.dx = 0;
   }

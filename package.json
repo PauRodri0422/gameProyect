@@ -20,6 +20,7 @@
   "homepage": "https://github.com/PauRodri0422/gameProyect#readme",
   "description": "Game where you control a paddle with the arrow keys to bounce a ball up to break bricks. This app uses the HTML5 canvas element and API",
   "devDependencies": {
+    "@babel/preset-env": "^7.26.9",
     "babel-eslint": "^10.1.0",
     "babel-loader": "^10.0.0",
     "css-loader": "^7.1.2",

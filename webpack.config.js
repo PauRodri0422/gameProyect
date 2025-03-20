@@ -7,7 +7,7 @@ const TerserPlugin = require('terser-webpack-plugin');
 const config = {
   entry: {
     index: './src/index.js',
-    style: './src/assets/css/style.css',
+    style: './src/assets/css/game.css',
   },
   devtool: 'inline-source-map',
   devServer: {

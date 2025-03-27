@@ -13,14 +13,15 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Set up Node.js version
         uses: actions/setup-node@v3
         with:
           node-version: '22.x'
 
-      - name: npm install, build, and test
+      - name: Install dependencies, build, and test
         run: |
           npm install
           npm run build --if-present
@@ -50,16 +51,27 @@ jobs:
       - name: Unzip artifact for deployment
         run: unzip release.zip
 
-      - name: 'Deploy to Azure VM via SSH'
+      - name: Deploy to VM via SSH
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.VM_IP }}
           username: ${{ secrets.VM_USERNAME }}
           key: ${{ secrets.VM_PRIVATE_KEY }}
           script: |
-            cd /home/${{ secrets.VM_USERNAME }}/app
-            pm2 stop all
+            echo "🔄 Moving to project directory..."
+            cd /home/azureuser/game-project
+
+            echo "📦 Stopping existing app..."
+            pm2 stop all || true
+            
+            echo "🚀 Deploying new version..."
             rm -rf *
-            unzip ~/release.zip -d /home/${{ secrets.VM_USERNAME }}/app
-            npm install --production
-            pm2 restart all
+            mv ~/release.zip .
+            unzip -o release.zip
+            npm install
+            npm run build
+            
+            echo "🔄 Restarting app..."
+            pm2 start npm -- start
+            
+            echo "✅ Deployment complete!"

@@ -1,4 +1,4 @@
-name: Build and deploy Node.js app to Azure Web App - GAME-PROYECT
+name: Build and deploy Node.js app to Azure VM - GAME-PROYECT
 
 on:
   push:
@@ -50,10 +50,16 @@ jobs:
       - name: Unzip artifact for deployment
         run: unzip release.zip
 
-      - name: 'Deploy to Azure Web App'
-        id: deploy-to-webapp
-        uses: azure/webapps-deploy@v3
+      - name: Deploy to Azure VM via SSH
+        uses: appleboy/ssh-action@master
         with:
-          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: .
+          host: ${{ secrets.VM_IP }}
+          username: azureuser
+          key: ${{ secrets.VM_PRIVATE_KEY }}
+          script: |
+            cd /home/azureuser/app
+            rm -rf *
+            mv ~/release.zip .
+            unzip release.zip
+            npm install
+            npm run start

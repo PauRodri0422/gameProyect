@@ -1,57 +1,50 @@
-name: Build and deploy Node.js app to Azure VM - GAME-PROYECT
+name: Build and Deploy to Azure VM
 
 on:
   push:
     branches:
-      - develop
-  workflow_dispatch:
+      - develop  # adjust if you deploy from a different branch
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v2
         with:
-          node-version: '22.x'
+          node-version: '22'  # use your desired Node.js version
 
       - name: Install dependencies
         run: npm install
 
-      - name: Build project
+      - name: Build the project
         run: npm run build
 
-      - name: Zip artifact
-        run: zip -r release.zip ./*
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      # Copy the built files and server code to the VM using scp.
+      - name: Copy files to VM
+        uses: appleboy/scp-action@master
         with:
-          name: game-release
-          path: release.zip
+          host: ${{ secrets.VM_IP }}
+          username: ${{ secrets.VM_USERNAME }}
+          key: ${{ secrets.VM_PRIVATE_KEY }}
+          port: ${{ secrets.VM_PORT }}  # optional if using default port 22, can be omitted
+          source: "."
+          target: "/home/${{ secrets.VM_USERNAME }}/form-app"  # adjust target path as needed
 
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: game-release
-
-      - name: Deploy to VM
+      # Execute remote commands via SSH to install dependencies and restart the app.
+      - name: Execute remote SSH commands
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.VM_IP }}
           username: ${{ secrets.VM_USERNAME }}
           key: ${{ secrets.VM_PRIVATE_KEY }}
+          port: ${{ secrets.VM_PORT }}
           script: |
-            mkdir -p /home/azureuser/game-project
-            cd /home/azureuser/game-project
-            pm2 stop all || true
-            unzip -o ~/release.zip -d .
-            npm install --production
-            pm2 start npm --name "VM-game" -- start
+            cd ~/form-app
+            npm install
+            # If using PM2, restart the app or start if not running:
+            pm2 restart app || pm2 start server.js --name app

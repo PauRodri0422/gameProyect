@@ -54,4 +54,4 @@ jobs:
             pm2 stop all || true
             unzip -o ~/release.zip -d .
             npm install --production
-            pm2 start npm --name "game" -- start
+            pm2 start npm --name "VM-game" -- start
